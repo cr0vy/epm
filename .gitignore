@@ -1,0 +1,6 @@
+# IntelliJ idea folder
+.idea
+
+# Python cache folder
+__pycache__
+
