@@ -10,6 +10,7 @@ from PySide2.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 
 class MainWidget(QWidget):
     start_exercise_file = Signal(str)
+    open_exercise_file = Signal(str)
 
     file_select_list_base = None
     file_select_list = None
@@ -44,6 +45,7 @@ class MainWidget(QWidget):
             self.file_select_list.addWidget(widget)
 
             widget.file_signal.connect(self.get_exercise_file)
+            widget.file_open_signal.connect(self.get_open_exercise_file)
 
     def resizeEvent(self, event):
         self.file_select_list_base.move(self.width() / 2 + 5, 5)
@@ -53,6 +55,10 @@ class MainWidget(QWidget):
     def get_exercise_file(self, file: str):
         self.start_exercise_file.emit(file)
 
+    @Slot(str)
+    def get_open_exercise_file(self, file: str):
+        self.open_exercise_file.emit(file)
+
 
 class SelectPanel(QWidget):
     name_label = None
@@ -60,6 +66,7 @@ class SelectPanel(QWidget):
     edit_button = None
 
     file_signal = Signal(str)
+    file_open_signal = Signal(str)
 
     def __init__(self, file: str):
         QWidget.__init__(self)
@@ -78,6 +85,7 @@ class SelectPanel(QWidget):
         self.start_button = QPushButton("Start", self)
         self.edit_button = QPushButton("Edit", self)
 
+        self.edit_button.clicked.connect(self.open_file)
         self.start_button.clicked.connect(self.send_file)
 
     def resizeEvent(self, event):
@@ -87,6 +95,10 @@ class SelectPanel(QWidget):
 
         self.start_button.move(self.width() - 100, 0)
         self.edit_button.move(self.width() - 50, 0)
+
+    @Slot()
+    def open_file(self):
+        self.file_open_signal.emit(self.file)
 
     @Slot()
     def send_file(self):

@@ -7,12 +7,14 @@ from PySide2.QtWidgets import QApplication, QStackedWidget, QWidget
 
 from exercise import ExerciseWidget
 from mainwidget import MainWidget
+from viewwidget import ViewWidget
 
 
 class MainWindow(QWidget):
     widget_stack = None
     main_widget = None
     exercise_widget = None
+    exercise_view_widget = None
 
     def __init__(self):
         QWidget.__init__(self)
@@ -25,14 +27,30 @@ class MainWindow(QWidget):
         self.widget_stack = QStackedWidget(self)
         self.main_widget = MainWidget()
         self.exercise_widget = ExerciseWidget()
+        self.exercise_view_widget = ViewWidget()
 
         self.widget_stack.addWidget(self.main_widget)
         self.widget_stack.addWidget(self.exercise_widget)
+        self.widget_stack.addWidget(self.exercise_view_widget)
 
         self.main_widget.start_exercise_file.connect(self.show_exercise_window)
+        self.main_widget.open_exercise_file.connect(self.show_exercise_view_widget)
+        self.exercise_view_widget.return_button.clicked.connect(self.show_main_widget)
 
     def resizeEvent(self, event):
         self.widget_stack.resize(self.size())
+
+    @Slot()
+    def show_main_widget(self):
+        if self.widget_stack.currentWidget() == self.exercise_view_widget:
+            self.exercise_view_widget.clear_widget()
+
+        self.widget_stack.setCurrentWidget(self.main_widget)
+
+    @Slot(str)
+    def show_exercise_view_widget(self, file: str):
+        self.widget_stack.setCurrentWidget(self.exercise_view_widget)
+        self.exercise_view_widget.open_exercise_file(file)
 
     @Slot(str)
     def show_exercise_window(self, file: str):
