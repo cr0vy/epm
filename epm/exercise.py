@@ -48,13 +48,15 @@ class ExerciseWidget(QWidget):
         self.exercise_description_label.setText(self.exercise_description_list[self.exercise_num])
 
     def setup_widget(self):
-        self.total_time_label = QLabel("00:00:00", self)
-        self.exercise_time_label = QLabel("00:00:00", self)
+        self.total_time_label = QLabel("Total:\n00:00:00", self)
+        self.exercise_time_label = QLabel("Current:\n00:00:00", self)
 
         font = QFont(self.total_time_label.font())
         font.setPixelSize(48)
         self.total_time_label.setFont(font)
         self.exercise_time_label.setFont(font)
+        self.total_time_label.setAlignment(Qt.AlignCenter)
+        self.exercise_time_label.setAlignment(Qt.AlignCenter)
 
         self.exercise_name_label = QLabel(self)
         self.exercise_name_label.setAlignment(Qt.AlignCenter)
@@ -79,10 +81,10 @@ class ExerciseWidget(QWidget):
         return hour + ":" + minute + ":" + second
 
     def resizeEvent(self, event):
-        self.total_time_label.move(self.width() / 2, 0)
+        self.total_time_label.move(self.width() / 2, self.height() / 2)
         self.total_time_label.resize(self.width() / 2, self.height() / 2)
 
-        self.exercise_time_label.move(self.width() / 2, self.height() / 2)
+        self.exercise_time_label.move(self.width() / 2, 0)
         self.exercise_time_label.resize(self.width() / 2, self.height() / 2)
 
         self.exercise_name_label.move(0, 0)
@@ -141,5 +143,5 @@ class ExerciseWidget(QWidget):
 
             self.speech_dispatcher_say("Start")
 
-        self.total_time_label.setText(self.get_str_time(self.total_time))
-        self.exercise_time_label.setText(self.get_str_time(self.time))
+        self.total_time_label.setText("Total:\n" + self.get_str_time(self.total_time))
+        self.exercise_time_label.setText("Current:\n" + self.get_str_time(self.time))
