@@ -36,6 +36,7 @@ class MainWindow(QWidget):
         self.main_widget.start_exercise_file.connect(self.show_exercise_window)
         self.main_widget.open_exercise_file.connect(self.show_exercise_view_widget)
         self.exercise_view_widget.return_button.clicked.connect(self.show_main_widget)
+        self.exercise_widget.finished_signal.connect(self.show_main_widget)
 
     def resizeEvent(self, event):
         self.widget_stack.resize(self.size())

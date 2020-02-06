@@ -3,7 +3,7 @@
 import json
 import subprocess
 
-from PySide2.QtCore import Qt, QTimer, Slot
+from PySide2.QtCore import Qt, QTimer, Signal, Slot
 from PySide2.QtGui import QFont
 from PySide2.QtWidgets import QLabel, QWidget
 
@@ -14,6 +14,8 @@ class ExerciseWidget(QWidget):
 
     exercise_name_label = None
     exercise_description_label = None
+
+    finished_signal = Signal()
 
     def __init__(self):
         QWidget.__init__(self)
@@ -100,7 +102,9 @@ class ExerciseWidget(QWidget):
 
     def stop_timer(self):
         self.timer.stop()
-        print("Stop")
+        self.speech_dispatcher_say("Finished")
+
+        self.finished_signal.emit()
 
     @staticmethod
     def get_double_str_num_format(time: int):
@@ -108,6 +112,11 @@ class ExerciseWidget(QWidget):
             return "0" + str(time)
         else:
             return str(time)
+
+    @staticmethod
+    def speech_dispatcher_say(say: str):
+        subprocess.call(['speech-dispatcher'])
+        subprocess.call(['spd-say', say])
 
     @Slot()
     def set_time(self):
@@ -119,12 +128,10 @@ class ExerciseWidget(QWidget):
             self.is_exercise = False
             self.exercise_num += 1
 
-            subprocess.call(['speech-dispatcher'])
-            subprocess.call(['spd-say', '"Change"'])
-
             if self.exercise_num == len(self.exercise_list):
                 self.stop_timer()
             else:
+                self.speech_dispatcher_say("Change")
                 self.exercise_name_label.setText(self.exercise_list[self.exercise_num])
                 self.exercise_description_label.setText(self.exercise_description_list[self.exercise_num])
 
@@ -132,8 +139,7 @@ class ExerciseWidget(QWidget):
             self.time = 0
             self.is_exercise = True
 
-            subprocess.call(['speech-dispatcher'])
-            subprocess.call(['spd-say', '"Start"'])
+            self.speech_dispatcher_say("Start")
 
         self.total_time_label.setText(self.get_str_time(self.total_time))
         self.exercise_time_label.setText(self.get_str_time(self.time))
