@@ -67,7 +67,10 @@ class ViewWidget(QWidget):
 
     def clear_widget(self):
         while self.exercises_widget.count() > 0:
-            self.exercises_widget.takeAt(0)
+            self.exercises_widget.itemAt(0).widget().remove_panel()
+
+        self.exercise_name_line.setText("")
+        self.file = ""
 
     def open_exercise_file(self, file: str):
         self.file = file
@@ -224,6 +227,9 @@ class PanelWidget(QWidget):
         self.name_line.setText(name)
         self.description_line.setText(description)
         self.time_line.setText(str(time))
+
+    def remove_panel(self):
+        self.remove_signal.emit(self)
 
     @Slot()
     def move_widget_down(self):
