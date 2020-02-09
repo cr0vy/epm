@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+from pathlib import Path
 
 from PySide2.QtCore import Qt, Signal, Slot
 from PySide2.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QPushButton, QScrollArea, QVBoxLayout, QWidget
@@ -17,6 +18,7 @@ class ViewWidget(QWidget):
     return_button = None
 
     add_button = None
+    save_button = None
 
     def __init__(self):
         QWidget.__init__(self)
@@ -33,6 +35,10 @@ class ViewWidget(QWidget):
         self.add_button.resize(75, 25)
         self.add_button.clicked.connect(self.add_line)
 
+        self.save_button = QPushButton("Save", self)
+        self.save_button.resize(150, 40)
+        self.save_button.clicked.connect(self.save)
+
         self.exercise_name_line = QLineEdit(self)
         self.exercise_name_line.move(135, 5)
         self.exercise_name_line.resize(125, 25)
@@ -43,17 +49,19 @@ class ViewWidget(QWidget):
 
         self.exercises_widget = QVBoxLayout()
         self.exercises_widget.setAlignment(Qt.AlignTop)
+        self.exercises_widget.setMargin(0)
 
         self.base_widget.setLayout(self.exercises_widget)
 
         self.return_button = QPushButton("Return wo save", self)
+        self.return_button.resize(150, 40)
 
     def resizeEvent(self, event):
         self.scroll_area.move(5, 35)
         self.scroll_area.resize(self.width() - 165, self.height() - 40)
         self.add_button.move(self.width() - 160 - 75, 5)
-        self.return_button.move(self.width() - 155, 5)
-        self.return_button.resize(150, 40)
+        self.save_button.move(self.width() - 155, 5)
+        self.return_button.move(self.width() - 155, 50)
 
         self.base_widget.resize(self.scroll_area.width() - 25, self.exercises_widget.count() * 25)
 
@@ -111,6 +119,36 @@ class ViewWidget(QWidget):
         self.exercises_widget.removeWidget(widget)
         self.base_widget.resize(self.scroll_area.width() - 25, self.exercises_widget.count() * 25)
 
+    @Slot()
+    def save(self):
+        name = self.exercise_name_line.text()
+
+        json_data = {}
+        json_data['name'] = name
+        json_data['change-time'] = 5
+        json_data['exercise'] = []
+
+        for i in range(self.exercises_widget.count()):
+            widget = self.exercises_widget.itemAt(i).widget()
+            print(widget)
+            json_data['exercise'].append({
+                'name': widget.get_name(),
+                'description': widget.get_description(),
+                'time': widget.get_time(),
+                'type': 'seconds'
+            })
+
+        json.dumps(json_data, indent=4)
+
+        if self.file == "":
+            name = self.exercise_name_line.text().replace(" ", "_") + ".json"
+            path = str(Path.home()) + "/.local/share/epm/"
+
+            self.file = path + name
+
+        with open(self.file, 'w') as outfile:
+            json.dump(json_data, outfile, indent=4)
+
 
 class PanelWidget(QWidget):
     name_line = None
@@ -138,6 +176,7 @@ class PanelWidget(QWidget):
         self.name_line = QLineEdit()
         self.description_line = QLineEdit()
         self.time_line = QLineEdit()
+        self.time_line.setInputMask("999")
         self.remove_button = QPushButton("Remove")
         self.remove_button.clicked.connect(self.remove_widget)
         self.move_up = QPushButton("\u25B2")
@@ -171,6 +210,15 @@ class PanelWidget(QWidget):
 
         self.move_down.setMinimumWidth(25)
         self.move_down.setMaximumWidth(25)
+
+    def get_description(self):
+        return self.description_line.text()
+
+    def get_name(self):
+        return self.name_line.text()
+
+    def get_time(self):
+        return int(self.time_line.text())
 
     def set_data(self, name: str, description: str, time: int):
         self.name_line.setText(name)

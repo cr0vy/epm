@@ -9,11 +9,14 @@ from PySide2.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 
 
 class MainWidget(QWidget):
+    add_exercise_file = Signal()
     start_exercise_file = Signal(str)
     open_exercise_file = Signal(str)
 
     file_select_list_base = None
     file_select_list = None
+
+    add_exercise_button = None
 
     def __init__(self):
         QWidget.__init__(self)
@@ -29,7 +32,16 @@ class MainWidget(QWidget):
 
         self.file_select_list_base.setLayout(self.file_select_list)
 
+        self.add_exercise_button = QPushButton("Add a new exercise", self)
+        self.add_exercise_button.clicked.connect(self.add_a_new_exercise_file)
+
     def load_exercise_files(self):
+        while self.file_select_list.count() > 0:
+            wid = self.file_select_list.itemAt(0).widget()
+            wid.hide()
+            self.file_select_list.removeWidget(wid)
+            print(wid)
+
         path = str(Path.home()) + "/.local/share/epm"
 
         if not Path(path).is_dir():
@@ -48,8 +60,15 @@ class MainWidget(QWidget):
             widget.file_open_signal.connect(self.get_open_exercise_file)
 
     def resizeEvent(self, event):
-        self.file_select_list_base.move(self.width() / 2 + 5, 5)
+        self.file_select_list_base.move(5, 5)
         self.file_select_list_base.resize(self.width() / 2 - 10, self.height() - 10)
+
+        self.add_exercise_button.move(self.width() / 2 + 50, 5)
+        self.add_exercise_button.resize(self.width() / 2 - 10 - 100, 40)
+
+    @Slot()
+    def add_a_new_exercise_file(self):
+        self.add_exercise_file.emit()
 
     @Slot(str)
     def get_exercise_file(self, file: str):

@@ -33,6 +33,7 @@ class MainWindow(QWidget):
         self.widget_stack.addWidget(self.exercise_widget)
         self.widget_stack.addWidget(self.exercise_view_widget)
 
+        self.main_widget.add_exercise_file.connect(self.show_new_exercise_view_widget_with)
         self.main_widget.start_exercise_file.connect(self.show_exercise_window)
         self.main_widget.open_exercise_file.connect(self.show_exercise_view_widget)
         self.exercise_view_widget.return_button.clicked.connect(self.show_main_widget)
@@ -45,6 +46,8 @@ class MainWindow(QWidget):
     def show_main_widget(self):
         if self.widget_stack.currentWidget() == self.exercise_view_widget:
             self.exercise_view_widget.clear_widget()
+
+            self.main_widget.load_exercise_files()
 
         self.widget_stack.setCurrentWidget(self.main_widget)
 
@@ -59,6 +62,11 @@ class MainWindow(QWidget):
         self.exercise_widget.setup_exercise()
         self.exercise_widget.start()
         self.widget_stack.setCurrentWidget(self.exercise_widget)
+
+    @Slot()
+    def show_new_exercise_view_widget_with(self):
+        self.widget_stack.setCurrentWidget(self.exercise_view_widget)
+        self.exercise_view_widget.clear_widget()
 
 
 if __name__ == '__main__':
