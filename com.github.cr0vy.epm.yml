@@ -1,0 +1,63 @@
+id: com.github.cr0vy.epm
+base: io.qt.qtwebkit.BaseApp
+base-version: "5.12"
+branch: stable
+sdk: org.kde.Sdk
+runtime: org.kde.Platform
+runtime-version: "5.12"
+command: epm
+finish-args:
+  - --socket=wayland
+  - --socket=x11
+  - --env=PATH=/app/bin:/usr/bin
+  - --env=QT_QPA_PLATFORM=xcb
+  - --device=dri
+  - --env=QT_QPA_PLATFORMTHEME="qt5ct"
+
+cleanup:
+  - "*.a"
+  - "*.la"
+  - /share/man
+  - /share/help
+cleanup-commands:
+  - python3 -m compileall /app/lib
+
+modules:
+  - name: pyside2
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/qt5include && cp -R /usr/include/Qt* /app/qt5include # https://bugreports.qt.io/browse/PYSIDE-787
+      - cd sources/shiboken2 && mkdir _build && cd _build &&
+        cmake -j 5 -GNinja
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DCMAKE_INSTALL_PREFIX=/app
+        -DUSE_PYTHON_VERSION=3
+        -DBUILD_TESTS=OFF .. &&
+        ninja install
+      - cd sources/pyside2 && mkdir _build && cd _build &&
+        cmake -j 5 -GNinja
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DCMAKE_INSTALL_PREFIX=/app
+        -DUSE_PYTHON_VERSION=3
+        -DBUILD_TESTS=OFF .. &&
+        ninja install
+    cleanup:
+      - /qt5include
+      - /bin
+    sources:
+      - type: archive
+        url: https://download.qt.io/official_releases/QtForPython/pyside2/PySide2-5.12.1-src/pyside-setup-everywhere-src-5.12.1.tar.xz
+        sha256: 6e26b6240b97558b8bf3c97810e950ef4121a03a1ebdecfb649992a505f18059
+      - type: shell
+        commands:
+          - sed -i 's|\(--include-paths=\)|\1/app/qt5include:|' sources/pyside2/cmake/Macros/PySideModules.cmake
+
+  - name: epm
+    buildsystem: simple
+    build-commands:
+      - python3 setup.py install --prefix=/app --root=/
+    sources:
+      - type: git
+        url: "ssh://git@github.com/Cr0vy/epm.git"
+        branch: "development"
+

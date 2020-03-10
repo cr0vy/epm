@@ -69,9 +69,12 @@ class MainWindow(QWidget):
         self.exercise_view_widget.clear_widget()
 
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    win = MainWindow()
-    win.resize(800, 600)
-    win.show()
-    sys.exit(app.exec_())
+class MainApp(QApplication):
+    def __init__(self, argv):
+        QApplication.__init__(self, argv)
+        win = MainWindow()
+        win.resize(800, 600)
+        win.show()
+
+    def run(self):
+        return self.exec_()
